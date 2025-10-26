@@ -1,18 +1,25 @@
 # Framework principal
-Django
+Django==5.0.6
 
-# Servidor de producción (para el Procfile)
-gunicorn
+# Servidor de producción (para Render)
+gunicorn==22.0.0
 
-# Servir archivos estáticos (CSS, iconos)
-whitenoise
+# Base de datos (PostgreSQL en Render)
+dj-database-url==2.1.0
+psycopg2-binary==2.9.9
 
-# Base de datos de Render (PostgreSQL)
-dj-database-url
-psycopg2-binary
+# Servir archivos estáticos (CSS/JS) en producción
+whitenoise==6.7.0
 
 # Manejo de imágenes (Galería y Servicios)
-Pillow
+Pillow==10.3.0
 
 # Autenticación (Login con Google)
-django-allauth
+django-allauth==0.61.1
+oauthlib==3.2.2
+requests-oauthlib==2.0.0
+
+# Otras dependencias que 'allauth' podría necesitar
+python3-openid==3.2.0
+requests==2.32.3
+
