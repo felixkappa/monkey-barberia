@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}The Monkey's Barber Studio{% endblock %}
+
+{% block content %}
+    
+    {% if info %}
+    <section class="general-info" style="text-align: center; margin-bottom: 40px; padding: 20px;">
+        <h1 style="border-bottom: none;">{{ info.titulo }}</h1>
+        <p style="font-style: italic; color: var(--color-secundario);">{{ info.descripcion_corta }}</p>
+        <p>{{ info.texto_principal|linebreaks }}</p>
+    </section>
+    {% endif %}
+
+    <h2 style="text-align: center; margin-bottom: 2rem;">Nuestros Servicios</h2>
+
+    <div class="servicios-container">
+
+        {% for servicio in servicios %}
+            <div class="servicio-item">
+                
+                {% if servicio.imagen %}
+                    <img src="{{ servicio.imagen.url }}" alt="Imagen de {{ servicio.nombre }}">
+                {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="Imagen no disponible"> 
+                {% endif %}
+                
+                <div class="servicio-texto">
+                    <h4>{{ servicio.nombre }}</h4>
+                    <p class="precio">${{ servicio.precio|floatformat:2 }}</p> 
+                    {% if servicio.duracion_minutos > 0 %}
+                        <p class="duracion">({{ servicio.duracion_minutos }} min)</p>
+                    {% endif %}
+                </div>
+                
+            </div>
+        {% empty %}
+            <p style="text-align: center; margin-top: 2rem;">Próximamente mostraremos nuestros servicios aquí. ¡El Administrador debe cargarlos!</p>
+        {% endfor %}
+
+    </div>
+
+{% endblock %} {% block map %}
+    <section class="map-section" style="margin-top: 40px; text-align: center;">
+        <h2>📍 Nuestra Ubicación</h2>
+        
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d874.5618646854306!2d-106.10604513038281!3d28.742027774347658!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x86ea412ca6ace521%3A0x34150b094f3b9be5!2sThe%20Monkey's%20Barber%20Studio!5e0!3m2!1ses-419!2smx!4v1761434672969!5m2!1ses-419!2smx" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        
+        <div style="margin-top: 15px;">
+            <p style="font-size: 1.1rem; font-weight: bold;">¿Cómo llegar?</p>
+            
+            <a href="https://maps.app.goo.gl/6rSThGkWee3wpY4o9" 
+               target="_blank"
+               class="nav-links-btn" 
+               style="background-color: #007bff; color: white; padding: 10px 25px; text-decoration: none; border-radius: 5px;">
+                 
+               Calcular Ruta en Google Maps
+            </a>
+        </div>
+    </section>
+{% endblock map %} ```

@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agendar Cita{% endblock %}
+
+{% block content %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <h1>Agendar una Cita</h1>
+    
+    <form method="post" id="cita-form" action="." style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+        {% csrf_token %} 
+        
+        <h2>1. Completa tus Datos y Servicio</h2>
+        <p>
+            {{ form.nombre_cliente.label_tag }}: {{ form.nombre_cliente }}
+            <span style="color: red;">{{ form.nombre_cliente.errors }}</span>
+        </p>
+        <p>
+            {{ form.telefono_cliente.label_tag }}: {{ form.telefono_cliente }}
+            <span style="color: red;">{{ form.telefono_cliente.errors }}</span>
+        </p>
+        <div>
+            <p>{{ form.servicios.label_tag }}:</p>
+            {{ form.servicios }}
+            <span style="color: red;">{{ form.servicios.errors }}</span>
+        </div>
+        
+        <div style="margin-top: 15px; font-size: 1.2em; font-weight: bold;">
+            Total: $<span id="total-precio">0.00</span>
+        </div>
+        <div style="margin-top: 5px; font-size: 1em; color: #555;">
+            Duración Total: <span id="total-duracion">0</span> min
+        </div>
+
+        <hr>
+
+        <h2>2. Selecciona el Día</h2>
+        <div id='calendar'></div> 
+
+        <hr>
+
+        <h2>3. Selecciona la Hora</h2>
+        <div id="horas-disponibles-container" style="display: flex; gap: 10px; flex-wrap: wrap; min-height: 50px;">
+            <p>Selecciona un servicio y luego haz clic en un día del calendario.</p>
+        </div>
+
+        <hr>
+        
+        <p>Tu selección: <strong id="seleccion-display">Ninguna</strong></p>
+
+        {% if form.non_field_errors %}
+             <p style="color: red;">{{ form.non_field_errors }}</p>
+        {% endif %}
+
+        {{ form.fecha_hora_inicio }}
+
+        <button type="submit" id="confirmar-btn" disabled>Confirmar Cita</button>
+    </form>
+
+<script>
+    const PRECIOS_SERVICIOS = {{ precios_servicios_json }};
+    const DURACIONES_SERVICIOS = {{ duraciones_servicios_json }};
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const horasContainer = document.getElementById('horas-disponibles-container');
+        const fechaHoraInput = document.getElementById('id_fecha_hora_inicio');
+        const confirmarBtn = document.getElementById('confirmar-btn');
+        const seleccionDisplay = document.getElementById('seleccion-display');
+        const serviciosCheckboxes = document.querySelectorAll('input[name="servicios"]');
+        const HORAS_API_URL = "{% url 'citas:obtener_horas_disponibles' %}";
+        
+        const totalPrecioEl = document.getElementById('total-precio');
+        const totalDuracionEl = document.getElementById('total-duracion'); 
+
+        let fechaSeleccionada = null;
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            validRange: { start: new Date().toISOString().split('T')[0] },
+            dateClick: function(info) {
+                fechaSeleccionada = info.dateStr;
+                const serviciosIds = getServiciosSeleccionados();
+                if (serviciosIds.length === 0) {
+                    alert("⚠️ Por favor, selecciona al menos un servicio primero.");
+                    return;
+                }
+                mostrarHoras(fechaSeleccionada, serviciosIds);
+            },
+        });
+        calendar.render();
+
+
+        serviciosCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                
+                calcularTotales();
+                
+                const serviciosIds = getServiciosSeleccionados();
+                if (fechaSeleccionada && serviciosIds.length > 0) {
+                    mostrarHoras(fechaSeleccionada, serviciosIds);
+                } else {
+                    limpiarSeleccionDeHora();
+                    horasContainer.innerHTML = '<p>Ahora selecciona un día en el calendario.</p>';
+                }
+            });
+        });
+
+        function calcularTotales() {
+            let totalPrecio = 0.0;
+            let totalDuracion = 0;
+            
+            serviciosCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    const servicioId = checkbox.value;
+                    const precio = PRECIOS_SERVICIOS[servicioId];
+                    if (precio) {
+                        totalPrecio += precio;
+                    }
+                    const duracion = DURACIONES_SERVICIOS[servicioId];
+                    if (duracion) {
+                        totalDuracion += duracion;
+                    }
+                }
+            });
+            totalPrecioEl.textContent = totalPrecio.toFixed(2);
+            totalDuracionEl.textContent = totalDuracion;
+        }
+
+        function getServiciosSeleccionados() {
+            return Array.from(serviciosCheckboxes)
+                        .filter(i => i.checked)
+                        .map(i => i.value);
+        }
+
+        function mostrarHoras(fecha, serviciosIds) {
+        limpiarSeleccionDeHora();
+        horasContainer.innerHTML = `<p>Buscando horas para el ${fecha}...`;
+
+        const params = new URLSearchParams({
+            fecha: fecha,
+            servicios: serviciosIds.join(',')
+        });
+        
+        axios.get(`${HORAS_API_URL}?${params.toString()}`)
+        .then(function (response) {
+            const horas = response.data.horas;
+            horasContainer.innerHTML = ''; 
+            
+            if (!horas || horas.length === 0) {
+                horasContainer.innerHTML = '<p style="color: orange;">No hay horarios disponibles que coincidan con la duración de los servicios seleccionados.</p>';
+                return;
+            }
+            
+            horas.forEach(item => {
+                const boton = document.createElement('button');
+                boton.type = 'button';
+                boton.textContent = item.hora;
+                boton.classList.add('btn-hora');
+                boton.disabled = item.reservada;
+                
+                boton.dataset.datetime = item.formato_db;
+                boton.dataset.hora = item.hora;
+                
+                if (item.reservada) {
+                    boton.classList.add('btn-reservada');
+                } else {
+                    boton.classList.add('btn-disponible');
+                    boton.onclick = (e) => seleccionarCita(e); 
+                }
+                horasContainer.appendChild(boton);
+            });
+        })
+        .catch(function (error) {
+            console.error("Error en la petición AJAX:", error.response ? error.response.data : error.message);
+            horasContainer.innerHTML = `<p style="color: red;">Ocurrió un error al cargar la disponibilidad.</p>`;
+        });
+    }
+
+    function seleccionarCita(e) {
+        const clickedButton = e.target;
+        const fechaHoraDB = clickedButton.dataset.datetime;
+        const horaDisplayStr = clickedButton.dataset.hora;
+
+        const totalDuracion = parseInt(totalDuracionEl.textContent, 10);
+        if (totalDuracion === 0) {
+            alert("Por favor, selecciona al menos un servicio.");
+            return;
+        }
+
+        document.querySelectorAll('.btn-hora').forEach(btn => {
+            btn.classList.remove('selected-start', 'selected-duration');
+            if (!btn.classList.contains('btn-reservada')) {
+                btn.disabled = false;
+            }
+        });
+
+        clickedButton.classList.add('selected-start');
+        
+        const startTime = new Date(fechaHoraDB);
+        const endTime = new Date(startTime.getTime() + totalDuracion * 60000); // Añadir minutos
+
+        document.querySelectorAll('.btn-hora').forEach(btn => {
+            const btnTime = new Date(btn.dataset.datetime);
+            
+            if (btnTime > startTime && btnTime < endTime) {
+                btn.classList.add('selected-duration');
+                btn.disabled = true;
+            }
+        });
+
+        fechaHoraInput.value = fechaHoraDB; 
+        seleccionDisplay.textContent = `Día ${fechaSeleccionada} a las ${horaDisplayStr} (Duración: ${totalDuracion} min)`;
+        confirmarBtn.disabled = false;
+    }
+
+        function limpiarSeleccionDeHora() {
+            fechaHoraInput.value = '';
+            seleccionDisplay.textContent = 'Ninguna';
+            confirmarBtn.disabled = true;
+        }
+    });
+</script>
+
+<style>
+    .btn-hora.selected { 
+    }
+
+    .btn-hora.selected-start { 
+        background-color: #28a745; 
+        color: white; 
+        border-color: #28a745; 
+        font-weight: bold; 
+    }
+
+    .btn-hora.selected-duration {
+        background-color: #f0ad4e; 
+        color: white;
+        border-color: #eea236;
+        opacity: 0.9;
+    }
+
+    .btn-hora.selected-start { 
+    background-color: #28a745;
+    color: white; 
+    border-color: #28a745; 
+    font-weight: bold; 
+}
+
+.btn-hora.selected-duration {
+    background-color: #f0ad4e; 
+    color: white;
+    border-color: #eea236;
+    opacity: 0.9;
+}
+</style>
+{% endblock content %}

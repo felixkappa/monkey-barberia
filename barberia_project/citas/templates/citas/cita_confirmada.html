@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cita Confirmada</title>
+</head>
+<body>
+    <h1>¡Cita Agendada con Éxito!</h1>
+    
+    <div style="border: 2px solid green; padding: 20px;">
+        <h2>Detalles de su Cita</h2>
+        <p><strong>Cliente:</strong> {{ cita.nombre_cliente }}</p>
+        <p><strong>Servicio:</strong> {{ cita.servicio.nombre }}</p>
+        <p><strong>Fecha y Hora:</strong> {{ cita.fecha_hora|date:"d M Y \a \l\a\s H:i" }}</p>
+        <p><strong>Teléfono:</strong> {{ cita.telefono_cliente }}</p>
+        <p><strong>Estado:</strong> {{ cita.get_estado_display }}</p>
+    </div>
+    
+    <p>Le enviaremos un recordatorio a su teléfono antes de su cita.</p>
+    
+    <p><a href="{% url 'home' %}">Volver al inicio</a></p>
+</body>
+</html>

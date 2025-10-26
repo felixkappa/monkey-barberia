@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %} {% block title %}Confirmar Inicio de Sesión{% endblock %}
+
+{% block content %}
+    <div class="login-container">
+        
+        <div class="login-image">
+            <img src="{% static 'images/barberia-login.jpg' %}" alt="Interior de la Barbería">
+        </div>
+
+        <div class="login-form">
+            <h1>Confirmar Inicio de Sesión</h1>
+            
+            <p>
+                {% blocktrans with provider.name as provider %}
+                Estás a punto de iniciar sesión usando tu cuenta de {{ provider }}.
+                Por favor, haz clic en "Continuar" para confirmar.
+                {% endblocktrans %}
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit">Continuar</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block map %}
+    {% endblock map %}

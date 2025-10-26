@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Galería de Cortes{% endblock %}
+
+{% block content %}
+    <h1 style="text-align: center; margin-bottom: 2rem;">Galería de Cortes</h1>
+
+    <div class="galeria-container">
+
+        {% for corte in page_obj %}
+            <div class="galeria-item">
+                
+                {% if corte.imagen %}
+                    <img src="{{ corte.imagen.url }}" alt="Imagen de {{ corte.nombre }}">
+                {% endif %}
+                
+                <div class="galeria-texto">
+                    <h4>{{ corte.nombre }}</h4> 
+                    <p>{{ corte.descripcion }}</p>
+                </div>
+                
+            </div>
+            
+        {% empty %}
+            <p style="text-align: center;">Aún no hay imágenes en la galería.</p>
+        {% endfor %}
+
+    </div> <nav class="paginacion-nav">
+        <ul class="paginacion">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Anterior</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo; Anterior</span>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente &raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Siguiente &raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+<style>
+    .galeria-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    .galeria-item {
+        width: 90%;
+        max-width: 600px;
+        margin-bottom: 2.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .galeria-item img {
+        width: 100%;
+        height: auto;
+    }
+    .galeria-texto {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .galeria-texto h4 {
+        margin-top: 0;
+        font-size: 1.5rem;
+    }
+    .galeria-texto p {
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .paginacion-nav {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    .paginacion {
+        display: flex;
+        list-style: none;
+        padding-left: 0;
+        border-radius: .25rem;
+    }
+    .page-item .page-link {
+        color: #007bff;
+        padding: .5rem .75rem;
+        text-decoration: none;
+        border: 1px solid #dee2e6;
+        margin: 0; 
+    }
+    .page-item:first-child .page-link {
+        border-top-left-radius: .25rem;
+        border-bottom-left-radius: .25rem;
+    }
+    .page-item:last-child .page-link {
+        border-top-right-radius: .25rem;
+        border-bottom-right-radius: .25rem;
+    }
+    .page-item.active .page-link {
+        z-index: 1;
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+</style>
+
+{% endblock %}

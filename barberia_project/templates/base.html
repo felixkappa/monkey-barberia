@@ -1,0 +1,73 @@
+{% load static %}
+{% load socialaccount %} <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Barbería{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" /></head>
+<body>
+
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">Inicio</a></li>
+            
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'citas:agendar_cita' %}">Agendar Cita</a></li>
+                <li><span>Hola, {{ user.first_name|default:user.username }}</span></li>
+                
+                {% if user.is_staff %}
+                    <li><a href="{% url 'citas:lista_citas' %}">Ver Citas</a></li> 
+                {% endif %}
+                <li><a href="{% url 'lista_cortes' %}">Ver Galeria</a></li>
+                <li><a href="{% url 'account_logout' %}">Cerrar Sesión</a></li>
+
+            {% else %}
+                <li><a href="{% provider_login_url 'google' %}">Iniciar Sesión con Google</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="container">
+        
+        {% block content %}
+        {% endblock %}
+        
+        {% block map %}
+        {% endblock map %}
+
+    </div> <footer>
+        <div class="container footer-content">
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <p>📞 Teléfono: <a href="tel:+52 614 210 4533">614 210 4533</a></p>
+                <p>📧 Email: <a href="mailto:info@barberia.com">info@barberia.com</a></p>
+                <p>📍 Dirección: Calle Ficticia #123, Ciudad</p>
+            </div>
+
+            <div class="footer-col">
+                <h3>Navegación Rápida</h3>
+                <p><a href="{% url 'home' %}">Inicio</a></p>
+                <p><a href="{% url 'lista_cortes' %}">Galería de Cortes</a></p>
+                <p><a href="{% url 'citas:agendar_cita' %}">Agendar Cita</a></p>
+            </div>
+
+            
+
+            <div class="footer-col social-links">
+                <h3>Síguenos</h3>
+                    <a href="https://www.instagram.com/TU_USUARIO" target="_blank" aria-label="Enlace a Instagram">
+                        <i class="fa-brands fa-instagram"></i> </a>
+        
+                    <a href="https://www.facebook.com/TU_PAGINA" target="_blank" aria-label="Enlace a Facebook">
+                    <i class="fa-brands fa-facebook"></i> </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 The Monkey's Barber Studio. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
