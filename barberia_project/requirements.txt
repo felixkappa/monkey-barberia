@@ -23,7 +23,8 @@ requests-oauthlib==2.0.0
 python3-openid==3.2.0
 requests==2.32.3
 
-dateutil==2.9.0
+dateutil==2.8.2
+
 
 
 
