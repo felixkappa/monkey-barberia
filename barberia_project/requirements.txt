@@ -1,5 +1,4 @@
 absl-py==2.3.1
-aext-assistant-server==4.1.0
 aext-core==4.1.0
 aext-core-server==4.1.0
 aext-panels==4.1.0
@@ -405,4 +404,5 @@ zict==3.0.0
 zipp==3.17.0
 zope.interface==5.4.0
 zstandard==0.23.0
+
 
